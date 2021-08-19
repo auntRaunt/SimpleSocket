@@ -47,8 +47,12 @@
 
         #messages {
             list-style-type: none;
-            margin: 0;
+            margin: 0 20px;
             padding: 0;
+            /* display: flex;
+            flex-direction: column;
+            justify-content: space-evenly; */
+            
         }
 
         #messages>li {
@@ -59,10 +63,23 @@
             background: #efefef;
         }
 
+        .each{
+            display: flex;
+            justify-content: space-evenly;
+        }
+
         #form {
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+        }
+
+        .otherUser{
+            text-align: left
+        }
+
+        .self{
+            text-align: right
         }
     </style>
 </head>
@@ -76,10 +93,10 @@
 
         <div id="remark">
         </div>
-        
 
-            <input id="input" autocomplete="off" /><button>Send</button>
-        
+
+        <input id="input" autocomplete="off" /><button>Send</button>
+
     </form>
 
 
@@ -87,6 +104,12 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socket = io();
+    let socketId = "";
+
+    socket.on('connect', () => {
+        socketId = socket.id;
+    })
+
     const form = document.getElementById("form")
     const input = document.getElementById("input");
     const messages = document.getElementById("messages");
@@ -101,10 +124,22 @@
     })
 
     socket.on("send message", (user, message) => {
-        const newMessage = document.createElement("h1");
-        console.log(message);
-        newMessage.textContent = user + ":" + message
-        messages.appendChild(newMessage);
+        // const newMessageDiv = document.createElement('div');
+        // const newUserName = document.createElement('p');
+        const newMessageContent = document.createElement('p');
+        // newUserName.textContent = user + ":";
+        newMessageContent.textContent = message;
+        // my message
+        if(user === socketId){
+            newMessageContent.className="self";
+        }else{
+            newMessageContent.className="otherUser"
+        }
+        messages.appendChild(newMessageContent);
+        // const newMessage = document.createElement("h1");
+        // console.log(message);
+        // newMessage.textContent = user + ":" + message
+        // messages.appendChild(newMessage);
     })
 
     input.addEventListener("focus", () => {
@@ -116,7 +151,7 @@
         const allRemarks = document.getElementsByClassName("newRemark");
         const existedUsers = [];
 
-        for(let each of allRemarks){
+        for (let each of allRemarks) {
             // console.log(`each = ${each}`);
             const displayUser = each.textContent.split("is typing...")[0];
             // console.log(`displayUser`)
@@ -125,7 +160,7 @@
         }
         // console.log(`existedUsers`);
         // console.log(existedUsers)
-        if(existedUsers.indexOf(user) < 0){
+        if (existedUsers.indexOf(user) < 0) {
             const newRemark = document.createElement('p')
             newRemark.className = "newRemark"
             newRemark.textContent = user + "is typing...";
@@ -142,12 +177,12 @@
         const allRemarks = document.getElementsByClassName("newRemark");
         // console.log(`allRemarks`)
         // console.log(allRemarks);
-        for(let each of allRemarks){
+        for (let each of allRemarks) {
             // console.log(each.textContent);
             const displayUser = each.textContent.split("is typing...")[0];
             // console.log(`displayUser=${displayUser}`)
             //     console.log(`user=${user}`); 
-            if(displayUser === user){
+            if (displayUser === user) {
                 // console.log(`same user!!`)
                 each.remove();
             }
