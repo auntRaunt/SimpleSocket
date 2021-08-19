@@ -110,8 +110,12 @@
         <div id="remark">
         </div>
 
+        <label name="name">Input your display name</label>
+        <input type="text" value="" id="name"/>
+        <div>
+            <input id="input" autocomplete="off" /><button>Send</button>
+        </div>
 
-        <input id="input" autocomplete="off" /><button>Send</button>
 
     </form>
 
@@ -131,68 +135,62 @@
     const input = document.getElementById("input");
     const messages = document.getElementById("messages");
     const remark = document.getElementById("remark");
+    const displayName = document.getElementById("name");
 
     form.addEventListener("submit", (e) => {
+        // console.log(displayName.value);
         e.preventDefault();
         if (input.value) {
-            socket.emit("chat message", input.value)
+            socket.emit("chat message", input.value, displayName.value)
             input.value = "";
         }
     })
 
     input.addEventListener("focus", () => {
-        socket.emit("typing")
+        socket.emit("typing", displayName.value)
     })
 
     input.addEventListener("focusout", () => {
-        socket.emit("notTyping");
+        socket.emit("notTyping", displayName.value);
     })
 
-    socket.on("typing", user => {
-        // console.log(user);
+    socket.on("typing", (user,displayName)=> {
         const allRemarks = document.getElementsByClassName("newRemark");
         const existedUsers = [];
 
         for (let each of allRemarks) {
-            // console.log(`each = ${each}`);
             const displayUser = each.textContent.split("is typing...")[0];
-            // console.log(`displayUser`)
-            // console.log(displayUser);
             existedUsers.push(displayUser);
         }
-        // console.log(`existedUsers`);
-        // console.log(existedUsers)
-        if (existedUsers.indexOf(user) < 0) {
+        let name = displayName ? displayName : user;
+        // only if screen not have the one typing will add the one is typing
+        if (existedUsers.indexOf(name) < 0) {
             const newRemark = document.createElement('p')
             newRemark.className = "newRemark"
-            newRemark.textContent = user + "is typing...";
+            newRemark.textContent = name + " is typing...";
             remark.appendChild(newRemark);
         }
 
     })
 
-    socket.on("notTyping", user => {
+    socket.on("notTyping", (user, displayName)=> {
         const allRemarks = document.getElementsByClassName("newRemark");
-        // console.log(`allRemarks`)
-        // console.log(allRemarks);
+        let name = displayName ? displayName : user;
         for (let each of allRemarks) {
-            // console.log(each.textContent);
             const displayUser = each.textContent.split("is typing...")[0];
-            // console.log(`displayUser=${displayUser}`)
-            //     console.log(`user=${user}`); 
-            if (displayUser === user) {
-                // console.log(`same user!!`)
+            if (displayUser === name) {
                 each.remove();
             }
         }
     })
 
-    socket.on("send message", (user, message) => {
+    socket.on("send message", (user, message, displayName) => {
         // const newMessageDiv = document.createElement('div');
+        console.log(`displayName = ${displayName}`);
         const newUserName = document.createElement('span');
         const newMessageDiv = document.createElement('p');
         const newMessageContent = document.createElement('span');
-        newUserName.textContent = user;
+        newUserName.textContent = displayName ? displayName : user;
         newMessageContent.textContent = message;
         newUserName.className="user";
         newMessageContent.className ="dialogue"
@@ -205,10 +203,6 @@
         newMessageDiv.appendChild(newMessageContent);
         newMessageDiv.appendChild(newUserName);
         messages.appendChild(newMessageDiv);
-        // const newMessage = document.createElement("h1");
-        // console.log(message);
-        // newMessage.textContent = user + ":" + message
-        // messages.appendChild(newMessage);
     })
 </script>
 

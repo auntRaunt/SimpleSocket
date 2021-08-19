@@ -13,19 +13,20 @@ app.get("/", (req,res)=>{
 io.on("connection", socket => {
     console.log(`user ${socket.id} is connected`)
 
-    socket.on("chat message", message => {
+    socket.on("chat message", (message, displayName) => {
         console.log(`message received in server = ${message}`)
-        io.emit("send message", socket.id, message)
+        io.emit("send message", socket.id, message, displayName)
     })
 
-    socket.on("typing", () => {
+    socket.on("typing", (displayName) => {
         const user = socket.id; 
-        // send to all connected sockets
-        io.emit("typing", socket.id)
+        // if anyone is typing, send to all connected sockets
+        io.emit("typing", socket.id, displayName)
     })
 
-    socket.on("notTyping", () => {
-        io.emit("notTyping", socket.id)
+    socket.on("notTyping", (displayName) => {
+        // if anyone is not typing, send to all connected sockets
+        io.emit("notTyping", socket.id, displayName)
     })
     
 
