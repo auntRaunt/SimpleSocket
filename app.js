@@ -18,10 +18,8 @@ io.on("connection", socket => {
         io.emit("send message", socket.id, message)
     })
 
-    socket.on("typing", (msg) => {
-        const user = socket.id;
-        const newMessage = user + msg;
-        // socket.emit("typing", newMessage)   
+    socket.on("typing", () => {
+        const user = socket.id; 
         // send to all connected sockets
         io.emit("typing", socket.id)
     })

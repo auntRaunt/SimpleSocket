@@ -52,7 +52,7 @@
             /* display: flex;
             flex-direction: column;
             justify-content: space-evenly; */
-            
+
         }
 
         #messages>li {
@@ -63,7 +63,7 @@
             background: #efefef;
         }
 
-        .each{
+        .each {
             display: flex;
             justify-content: space-evenly;
         }
@@ -74,12 +74,28 @@
             justify-content: flex-end;
         }
 
-        .otherUser{
-            text-align: left
+        .otherUser {
+
+            display: flex;
+            justify-content: flex-end;
+            flex-direction: row-reverse;
         }
 
-        .self{
-            text-align: right
+        .self {
+            /* text-align: right; */
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .dialogue {
+            background-color: gray;
+            padding: 5px 20px;
+            border-radius: 20px;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
         }
     </style>
 </head>
@@ -107,6 +123,7 @@
     let socketId = "";
 
     socket.on('connect', () => {
+        // get and assign client socket id when collect
         socketId = socket.id;
     })
 
@@ -123,27 +140,12 @@
         }
     })
 
-    socket.on("send message", (user, message) => {
-        // const newMessageDiv = document.createElement('div');
-        // const newUserName = document.createElement('p');
-        const newMessageContent = document.createElement('p');
-        // newUserName.textContent = user + ":";
-        newMessageContent.textContent = message;
-        // my message
-        if(user === socketId){
-            newMessageContent.className="self";
-        }else{
-            newMessageContent.className="otherUser"
-        }
-        messages.appendChild(newMessageContent);
-        // const newMessage = document.createElement("h1");
-        // console.log(message);
-        // newMessage.textContent = user + ":" + message
-        // messages.appendChild(newMessage);
+    input.addEventListener("focus", () => {
+        socket.emit("typing")
     })
 
-    input.addEventListener("focus", () => {
-        socket.emit("typing", "user is typing...")
+    input.addEventListener("focusout", () => {
+        socket.emit("notTyping");
     })
 
     socket.on("typing", user => {
@@ -169,10 +171,6 @@
 
     })
 
-    input.addEventListener("focusout", () => {
-        socket.emit("notTyping");
-    })
-
     socket.on("notTyping", user => {
         const allRemarks = document.getElementsByClassName("newRemark");
         // console.log(`allRemarks`)
@@ -189,7 +187,29 @@
         }
     })
 
-    socket.on("hi")
+    socket.on("send message", (user, message) => {
+        // const newMessageDiv = document.createElement('div');
+        const newUserName = document.createElement('span');
+        const newMessageDiv = document.createElement('p');
+        const newMessageContent = document.createElement('span');
+        newUserName.textContent = user;
+        newMessageContent.textContent = message;
+        newUserName.className="user";
+        newMessageContent.className ="dialogue"
+        // my message
+        if (user === socketId) {
+            newMessageDiv.className = "self";
+        } else {
+            newMessageDiv.className = "otherUser"
+        }
+        newMessageDiv.appendChild(newMessageContent);
+        newMessageDiv.appendChild(newUserName);
+        messages.appendChild(newMessageDiv);
+        // const newMessage = document.createElement("h1");
+        // console.log(message);
+        // newMessage.textContent = user + ":" + message
+        // messages.appendChild(newMessage);
+    })
 </script>
 
 </html>
