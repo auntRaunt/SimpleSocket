@@ -101,6 +101,14 @@
 </head>
 
 <body>
+    <div id="welcomeMessage">
+    </div>
+    <div>
+        <p>Chat Room</p>
+        <ul id="userList">
+        </ul>
+        <p>Current Online Users: <span id="noOfUser"></span></p>
+    </div>
 
     <ul id="messages">
     </ul>
@@ -111,7 +119,7 @@
         </div>
 
         <label name="name">Input your display name</label>
-        <input type="text" value="" id="name"/>
+        <input type="text" value="" id="name" />
         <div>
             <input id="input" autocomplete="off" /><button>Send</button>
         </div>
@@ -129,6 +137,7 @@
     socket.on('connect', () => {
         // get and assign client socket id when collect
         socketId = socket.id;
+        // removeUserList();
     })
 
     const form = document.getElementById("form")
@@ -136,6 +145,11 @@
     const messages = document.getElementById("messages");
     const remark = document.getElementById("remark");
     const displayName = document.getElementById("name");
+    const userListDOM = document.getElementById("userList");
+    const noOfUserDOM = document.getElementById("noOfUser");
+    const welcomeDOM = document.getElementById("welcomeMessage");
+
+
 
     form.addEventListener("submit", (e) => {
         // console.log(displayName.value);
@@ -155,7 +169,7 @@
         socket.emit("notTyping", input.value);
     })
 
-    socket.on("typing", (user,displayName)=> {
+    socket.on("typing", (user, displayName) => {
         const allRemarks = document.getElementsByClassName("newRemark");
         const existedUsers = [];
 
@@ -166,7 +180,7 @@
         // let name = displayName ? displayName : user;
         // only if screen not have the one typing will add the one is typing
         if (existedUsers.indexOf(user) < 0) {
-            console.log(`no one typing`);
+            // console.log(`no one typing`);
             const newRemark = document.createElement('p')
             newRemark.className = "newRemark"
             newRemark.textContent = user + " is typing...";
@@ -175,20 +189,13 @@
 
     })
 
-    socket.on("notTyping", (user, displayName)=> {
+    socket.on("notTyping", (user, displayName) => {
         console.log(`client receive not typing`);
         const allRemarks = document.getElementsByClassName("newRemark");
         // let name = displayName ? displayName : user;
         for (let each of allRemarks) {
             const displayUser = each.textContent.split("is typing...")[0].replace(/\s+/g, "");
-            console.log(`displayUser = ${displayUser}`)
-            console.log(`user = ${user}` )
-            console.log(displayUser);
-            console.log(user);
             if (displayUser === user) {
-                console.log(`match?`)
-                console.log(each);
-                console.log(each.textContent);
                 each.remove();
             }
         }
@@ -202,8 +209,8 @@
         const newMessageContent = document.createElement('span');
         newUserName.textContent = user;
         newMessageContent.textContent = message;
-        newUserName.className="user";
-        newMessageContent.className ="dialogue"
+        newUserName.className = "user";
+        newMessageContent.className = "dialogue"
         // my message
         if (user === socketId) {
             newMessageDiv.className = "self";
@@ -214,6 +221,57 @@
         newMessageDiv.appendChild(newUserName);
         messages.appendChild(newMessageDiv);
     })
+
+    socket.on("chatRoom", (userList, msg) => {
+        console.log(`test = ${msg}`);
+
+        if (msg === "someone has connected") {
+            console.log("welcome to new user")
+            const newMessage = document.createElement('h1');
+            newMessage.textContent = "A new User is in the chatroom. Please welcome to him!"
+            welcomeDOM.appendChild(newMessage);
+            setTimeout(() => {
+                welcomeDOM.remove();
+            }, 2000)
+            console.log(welcomeDOM);
+        }
+        console.log(`Message received in client: ${msg}`)
+        console.log(`userList from server`)
+        console.log(userList);
+        removeUserList(userList);
+        console.log(`displpay userList`)
+        console.log(userListDOM.children)
+        // if already have user in userList, then remove first
+
+
+        // only no userId in browser will add
+        for (let each of userList) {
+            // if DOM already exist the userId, will not add
+            const connectedUser = document.createElement("li");
+            connectedUser.textContent = each;
+            userListDOM.appendChild(connectedUser);
+        }
+
+
+        noOfUserDOM.textContent = userListDOM.children.length;
+    })
+
+    const removeUserList = (userList) => {
+        console.log(`remove user list`);
+        for (let user of userList) {
+            for (let each of userListDOM.children) {
+                if (user === each.textContent) {
+                    each.remove();
+                }
+            }
+        }
+        // show remaining userListDOM
+        console.log(`show remain userList`);
+        for (let each of userListDOM.children) {
+            console.log(each.textContent);
+            each.remove();
+        }
+    }
 </script>
 
 </html>

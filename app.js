@@ -6,6 +6,8 @@ const server = http.createServer(app);
 const {Server} = require("socket.io");
 const io = new Server(server);
 
+let chatRoom = [];
+
 app.get("/", (req,res)=>{
     res.sendFile(__dirname+"/index.html");
 });
@@ -13,8 +15,15 @@ app.get("/", (req,res)=>{
 io.on("connection", socket => {
     console.log(`user ${socket.id} is connected`)
 
+    
+    if(!chatRoom.includes(socket.id)){
+        chatRoom.push(socket.id);
+        console.log(chatRoom);
+        io.emit("chatRoom", chatRoom, "someone has connected")
+    }
+
     socket.on("chat message", (message, displayName) => {
-        console.log(`message received in server = ${message}`)
+        // console.log(`message received in server = ${message}`)
         io.emit("send message", socket.id, message, displayName)
     })
 
@@ -28,10 +37,19 @@ io.on("connection", socket => {
         // if anyone is not typing, send to all connected sockets
         io.emit("notTyping", socket.id, displayName)
     })
+
+
     
 
     socket.on("disconnect", ()=>{
         console.log(`a user is disconnected`)
+        // remove a user in chatroom
+        console.log(`disconnectUser = ${socket.id}`)
+        chatRoom = chatRoom.filter((each) => {
+            return each!==socket.id
+        })
+        console.log(chatRoom)
+        io.emit("chatRoom", chatRoom, "someone is disconnected");
     })
 })
 
