@@ -224,14 +224,15 @@
 
     socket.on("chatRoom", (userList, msg) => {
         console.log(`test = ${msg}`);
-
+        
         if (msg === "someone has connected") {
             console.log("welcome to new user")
+            // may be have lots of children, will not show
             const newMessage = document.createElement('h1');
             newMessage.textContent = "A new User is in the chatroom. Please welcome to him!"
             welcomeDOM.appendChild(newMessage);
             setTimeout(() => {
-                welcomeDOM.remove();
+                newMessage.remove();
             }, 2000)
             console.log(welcomeDOM);
         }
