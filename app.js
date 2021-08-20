@@ -1,3 +1,4 @@
+const e = require('express');
 const express = require('express')
 const app = express()
 const http = require('http');
@@ -10,6 +11,8 @@ require('dotenv').config()
 console.log(process.env.PORT);
 
 let chatRoom = [];
+let newChatRoom = {};
+let newChatRoomArr = [];
 
 app.get("/", (req,res)=>{
     res.sendFile(__dirname+"/index.html");
@@ -27,18 +30,63 @@ io.on("connection", socket => {
 
     socket.on("chat message", (message, displayName) => {
         // console.log(`message received in server = ${message}`)
-        io.emit("send message", socket.id, message, displayName)
+        console.log(`displayName = ${displayName}`)
+        let socketId = socket.id;
+        let newDisplayName = displayName;
+        let num=1;
+        // if already got this user name
+        if(newChatRoom[socketId] === undefined){
+            console.log(`the newChatRoom dont have this socketId`)
+            while(newChatRoomArr.includes(newDisplayName)){
+                newDisplayName = displayName + "" + num;
+                num++;
+            }
+        }
+
+        // reset
+        num = 1;
+        newChatRoom[socketId] = newDisplayName;
+        newChatRoomArr = [];
+
+        console.log(newChatRoom);
+        for(let socketId in newChatRoom){
+            let existedName = newChatRoom[socketId];
+            newChatRoomArr.push(existedName);
+        }
+
+        console.log(newDisplayName);
+        console.log(newChatRoomArr);
+        io.emit("send message", socket.id, message, newDisplayName)
     })
 
     socket.on("typing", (displayName) => {
+        
+        // check if newchatRoom has this userName, if no
         const user = socket.id; 
+        let newDisplayName = displayName;
+        if(newChatRoom[user] === undefined){
+            newDisplayName = displayName;
+        }else{
+            newDisplayName = newChatRoom[user];
+        }
+
         // if anyone is typing, send to all connected sockets
-        io.emit("typing", socket.id, displayName)
+        io.emit("typing", socket.id, newDisplayName)
     })
 
     socket.on("notTyping", (displayName) => {
+
+                // check if newchatRoom has this userName, if no
+                const user = socket.id; 
+                let newDisplayName = displayName;
+                if(newChatRoom[user] === undefined){
+                    newDisplayName = displayName;
+                }else{
+                    newDisplayName = newChatRoom[user];
+                }
+
         // if anyone is not typing, send to all connected sockets
-        io.emit("notTyping", socket.id, displayName)
+        io.emit("notTyping", socket.id, newDisplayName)
     })
 
 

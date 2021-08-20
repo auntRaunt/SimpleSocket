@@ -122,7 +122,7 @@
         <label name="name">Input your display name</label>
         <input type="text" value="" id="name" />
         <div>
-            <input id="input" autocomplete="off" /><button>Send</button>
+            <input id="input" autocomplete="off" disabled /><button id="sendBtn" disabled>Send</button>
         </div>
 
 
@@ -149,28 +149,41 @@
     const userListDOM = document.getElementById("userList");
     const noOfUserDOM = document.getElementById("noOfUser");
     const welcomeDOM = document.getElementById("welcomeMessage");
+    const sendBtnDOM = document.getElementById("sendBtn");
 
 
 
     form.addEventListener("submit", (e) => {
         // console.log(displayName.value);
         e.preventDefault();
+
         if (input.value) {
             socket.emit("chat message", input.value, displayName.value)
             input.value = "";
         }
     })
 
+    displayName.addEventListener("focusout", () => {
+        if (displayName.value) {
+            input.disabled = false;
+            displayName.disabled = true;
+            sendBtnDOM.disabled = false;
+        }
+    })
+
     input.addEventListener("focus", () => {
         console.log(input.value);
-        socket.emit("typing", input.value)
+        socket.emit("typing", displayName.value)
     })
 
     input.addEventListener("focusout", () => {
-        socket.emit("notTyping", input.value);
+        socket.emit("notTyping", displayName.value);
     })
 
     socket.on("typing", (user, displayName) => {
+        console.log(`receive in client`)
+        console.log(`displayName = ${displayName}`)
+
         const allRemarks = document.getElementsByClassName("newRemark");
         const existedUsers = [];
 
@@ -180,11 +193,11 @@
         }
         // let name = displayName ? displayName : user;
         // only if screen not have the one typing will add the one is typing
-        if (existedUsers.indexOf(user) < 0) {
+        if (existedUsers.indexOf(displayName) < 0) {
             // console.log(`no one typing`);
             const newRemark = document.createElement('p')
             newRemark.className = "newRemark"
-            newRemark.textContent = user + " is typing...";
+            newRemark.textContent = displayName + " is typing...";
             remark.appendChild(newRemark);
         }
 
@@ -192,11 +205,12 @@
 
     socket.on("notTyping", (user, displayName) => {
         console.log(`client receive not typing`);
+        console.log(`displayName = ${displayName}`)
         const allRemarks = document.getElementsByClassName("newRemark");
         // let name = displayName ? displayName : user;
         for (let each of allRemarks) {
             const displayUser = each.textContent.split("is typing...")[0].replace(/\s+/g, "");
-            if (displayUser === user) {
+            if (displayUser === displayName) {
                 each.remove();
             }
         }
@@ -205,10 +219,18 @@
     socket.on("send message", (user, message, displayName) => {
         // const newMessageDiv = document.createElement('div');
         // console.log(`displayName = ${displayName}`);
+
+        // set the displayName to new Display name
+        if (socketId === user) {
+            document.getElementById("name").value = displayName;
+            document.getElementById("name").disabled = true;
+        }
+
+
         const newUserName = document.createElement('span');
         const newMessageDiv = document.createElement('p');
         const newMessageContent = document.createElement('span');
-        newUserName.textContent = user;
+        newUserName.textContent = displayName;
         newMessageContent.textContent = message;
         newUserName.className = "user";
         newMessageContent.className = "dialogue"
