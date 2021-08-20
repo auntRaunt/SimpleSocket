@@ -147,11 +147,12 @@
     })
 
     input.addEventListener("focus", () => {
-        socket.emit("typing", displayName.value)
+        console.log(input.value);
+        socket.emit("typing", input.value)
     })
 
     input.addEventListener("focusout", () => {
-        socket.emit("notTyping", displayName.value);
+        socket.emit("notTyping", input.value);
     })
 
     socket.on("typing", (user,displayName)=> {
@@ -162,23 +163,32 @@
             const displayUser = each.textContent.split("is typing...")[0];
             existedUsers.push(displayUser);
         }
-        let name = displayName ? displayName : user;
+        // let name = displayName ? displayName : user;
         // only if screen not have the one typing will add the one is typing
-        if (existedUsers.indexOf(name) < 0) {
+        if (existedUsers.indexOf(user) < 0) {
+            console.log(`no one typing`);
             const newRemark = document.createElement('p')
             newRemark.className = "newRemark"
-            newRemark.textContent = name + " is typing...";
+            newRemark.textContent = user + " is typing...";
             remark.appendChild(newRemark);
         }
 
     })
 
     socket.on("notTyping", (user, displayName)=> {
+        console.log(`client receive not typing`);
         const allRemarks = document.getElementsByClassName("newRemark");
-        let name = displayName ? displayName : user;
+        // let name = displayName ? displayName : user;
         for (let each of allRemarks) {
-            const displayUser = each.textContent.split("is typing...")[0];
-            if (displayUser === name) {
+            const displayUser = each.textContent.split("is typing...")[0].replace(/\s+/g, "");
+            console.log(`displayUser = ${displayUser}`)
+            console.log(`user = ${user}` )
+            console.log(displayUser);
+            console.log(user);
+            if (displayUser === user) {
+                console.log(`match?`)
+                console.log(each);
+                console.log(each.textContent);
                 each.remove();
             }
         }
@@ -190,7 +200,7 @@
         const newUserName = document.createElement('span');
         const newMessageDiv = document.createElement('p');
         const newMessageContent = document.createElement('span');
-        newUserName.textContent = displayName ? displayName : user;
+        newUserName.textContent = user;
         newMessageContent.textContent = message;
         newUserName.className="user";
         newMessageContent.className ="dialogue"
