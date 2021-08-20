@@ -52,7 +52,6 @@
             /* display: flex;
             flex-direction: column;
             justify-content: space-evenly; */
-
         }
 
         #messages>li {
@@ -103,12 +102,14 @@
 <body>
     <div id="welcomeMessage">
     </div>
+
     <div>
-        <p>Chat Room</p>
-        <ul id="userList">
-        </ul>
+        <p style="font-weight: bold;">Chat Room</p>
+        <ol id="userList">
+        </ol>
         <p>Current Online Users: <span id="noOfUser"></span></p>
     </div>
+    <hr />
 
     <ul id="messages">
     </ul>
@@ -203,7 +204,7 @@
 
     socket.on("send message", (user, message, displayName) => {
         // const newMessageDiv = document.createElement('div');
-        console.log(`displayName = ${displayName}`);
+        // console.log(`displayName = ${displayName}`);
         const newUserName = document.createElement('span');
         const newMessageDiv = document.createElement('p');
         const newMessageContent = document.createElement('span');
@@ -223,10 +224,8 @@
     })
 
     socket.on("chatRoom", (userList, msg) => {
-        console.log(`test = ${msg}`);
-        
         if (msg === "someone has connected") {
-            console.log("welcome to new user")
+            // console.log("welcome to new user")
             // may be have lots of children, will not show
             const newMessage = document.createElement('h1');
             newMessage.textContent = "A new User is in the chatroom. Please welcome to him!"
@@ -234,14 +233,14 @@
             setTimeout(() => {
                 newMessage.remove();
             }, 2000)
-            console.log(welcomeDOM);
+            // console.log(welcomeDOM);
         }
-        console.log(`Message received in client: ${msg}`)
-        console.log(`userList from server`)
-        console.log(userList);
+        // console.log(`Message received in client: ${msg}`)
+        // console.log(`userList from server`)
+        // console.log(userList);
         removeUserList(userList);
-        console.log(`displpay userList`)
-        console.log(userListDOM.children)
+        // console.log(`displpay userList`)
+        // console.log(userListDOM.children)
         // if already have user in userList, then remove first
 
 
@@ -252,8 +251,6 @@
             connectedUser.textContent = each;
             userListDOM.appendChild(connectedUser);
         }
-
-
         noOfUserDOM.textContent = userListDOM.children.length;
     })
 
