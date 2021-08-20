@@ -6,6 +6,9 @@ const server = http.createServer(app);
 const {Server} = require("socket.io");
 const io = new Server(server);
 
+require('dotenv').config()
+console.log(process.env.PORT);
+
 let chatRoom = [];
 
 app.get("/", (req,res)=>{
@@ -54,6 +57,6 @@ io.on("connection", socket => {
 })
 
 
-server.listen(4000, ()=>{
-    console.log("listening at port 4000");
-})
+server.listen((process.env.PORT), ()=>{
+    console.log(`listening at port ${process.env.PORT}`);
+});
