@@ -245,18 +245,24 @@
         messages.appendChild(newMessageDiv);
     })
 
-    socket.on("chatRoom", (userList, msg) => {
+    socket.on("chatRoom", (userList, remainUserList, msg) => {
+        console.log(`receive in chatRoom`)
+        console.log(userList)
+        console.log(remainUserList)
+        console.log(msg);
+
         if (msg === "someone has connected") {
-            // console.log("welcome to new user")
-            // may be have lots of children, will not show
+            // userList = array
             const newMessage = document.createElement('h1');
             newMessage.textContent = "A new User is in the chatroom. Please welcome to him!"
             welcomeDOM.appendChild(newMessage);
             setTimeout(() => {
                 newMessage.remove();
             }, 2000)
-            // console.log(welcomeDOM);
         }
+
+
+
         // console.log(`Message received in client: ${msg}`)
         // console.log(`userList from server`)
         // console.log(userList);
@@ -265,24 +271,56 @@
         // console.log(userListDOM.children)
         // if already have user in userList, then remove first
 
-
         // only no userId in browser will add
         for (let each of userList) {
             // if DOM already exist the userId, will not add
             const connectedUser = document.createElement("li");
             connectedUser.textContent = each;
             userListDOM.appendChild(connectedUser);
+            console.log(connectedUser.textContent);
         }
+
+        if (msg === "update the displayName in chatRoom" || msg === "someone is disconnected" || msg ===
+            "someone has connected") {
+            // userList = {"socket.id": "displayName"}
+            // -> replace the socket.id to displayName
+            console.log(`update displayName in chatRoom`);
+            for (let each of userListDOM.children) {
+                // console.log(each);
+                let displaySocket = each.textContent;
+                // console.log(displaySocket);
+                for (let key in remainUserList) {
+                    let newDisplayName = remainUserList[key];
+                    // console.log(`newDisplayName = ${newDisplayName}`);
+                    if (displaySocket === key) {
+                        // console.log(displaySocket, key)
+                        // console.log(`changes socket = ${each.textContent}, new = ${newDisplayName}`);
+                        each.textContent = newDisplayName;
+                    }
+                }
+            }
+        }
+
+        // if (msg === "someone is disconnected") {
+        //     // remainUserList = {"socket.id": "martin"}
+        //     for (let each in remainUserList) {
+        //         if ()
+        //     }
+        // }
+
+
         noOfUserDOM.textContent = userListDOM.children.length;
     })
 
     const removeUserList = (userList) => {
+        // only for remove array
         console.log(`remove user list`);
         for (let user of userList) {
             for (let each of userListDOM.children) {
-                if (user === each.textContent) {
-                    each.remove();
-                }
+                // if (user === each.textContent) {
+                //     each.remove();
+                // }
+                each.remove();
             }
         }
         // show remaining userListDOM
